@@ -24,7 +24,7 @@ type Server struct {
 	Handler Handler
 }
 
-//NewServer return a LDAP Server
+// NewServer return a LDAP Server
 func NewServer() *Server {
 	return &Server{
 		chDone: make(chan bool),
@@ -34,6 +34,9 @@ func NewServer() *Server {
 // Handle registers the handler for the server.
 // If a handler already exists for pattern, Handle panics
 func (s *Server) Handle(h Handler) {
+	if s == nil {
+		return
+	}
 	if s.Handler != nil {
 		panic("LDAP: multiple Handler registrations")
 	}
@@ -60,11 +63,14 @@ func (s *Server) ListenAndServe(addr string, options ...func(*Server)) error {
 		option(s)
 	}
 
-	return s.serve()
+	return s.Serve()
 }
 
 // Handle requests messages on the ln listener
-func (s *Server) serve() error {
+func (s *Server) Serve() error {
+	if s == nil || s.Listener == nil {
+		return nil
+	}
 	defer s.Listener.Close()
 
 	if s.Handler == nil {
@@ -77,45 +83,53 @@ func (s *Server) serve() error {
 		select {
 		case <-s.chDone:
 			Logger.Print("Stopping server")
-			s.Listener.Close()
+			if s.Listener != nil {
+				s.Listener.Close()
+			}
 			return nil
 		default:
 		}
 
 		rw, err := s.Listener.Accept()
-
-		if s.ReadTimeout != 0 {
-			rw.SetReadDeadline(time.Now().Add(s.ReadTimeout))
-		}
-		if s.WriteTimeout != 0 {
-			rw.SetWriteDeadline(time.Now().Add(s.WriteTimeout))
-		}
-		if nil != err {
-			if opErr, ok := err.(*net.OpError); ok || opErr.Timeout() {
+		if err != nil {
+			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
 				continue
 			}
 			Logger.Println(err)
+			continue
+		}
+
+		if s.ReadTimeout != 0 && rw != nil {
+			rw.SetReadDeadline(time.Now().Add(s.ReadTimeout))
+		}
+		if s.WriteTimeout != 0 && rw != nil {
+			rw.SetWriteDeadline(time.Now().Add(s.WriteTimeout))
 		}
 
 		cli, err := s.newClient(rw)
-
 		if err != nil {
 			continue
 		}
 
 		i = i + 1
-		cli.Numero = i
-		Logger.Printf("Connection client [%d] from %s accepted", cli.Numero, cli.rwc.RemoteAddr().String())
-		s.wg.Add(1)
-		go cli.serve()
+		if cli != nil {
+			cli.Numero = i
+			if cli.rwc != nil && cli.rwc.RemoteAddr() != nil {
+				Logger.Printf("Connection client [%d] from %s accepted", cli.Numero, cli.rwc.RemoteAddr().String())
+			}
+			s.wg.Add(1)
+			go cli.serve()
+		}
 	}
 
-	return nil
 }
 
 // Return a new session with the connection
 // client has a writer and reader buffer
 func (s *Server) newClient(rwc net.Conn) (c *client, err error) {
+	if s == nil || rwc == nil {
+		return nil, nil
+	}
 	c = &client{
 		srv: s,
 		rwc: rwc,
@@ -136,6 +150,9 @@ func (s *Server) newClient(rwc net.Conn) (c *client, err error) {
 // transport connection.
 // In either case, when the LDAP session is terminated.
 func (s *Server) Stop() {
+	if s == nil || s.chDone == nil {
+		return
+	}
 	close(s.chDone)
 	Logger.Print("gracefully closing client connections...")
 	s.wg.Wait()

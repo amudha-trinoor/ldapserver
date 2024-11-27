@@ -135,14 +135,17 @@ func readTagAndLength(conn *bufio.Reader, bytes *[]byte) (ret ldap.TagAndLength,
 // Append the read bytes to "bytes"
 // Return the last read byte
 func readBytes(conn *bufio.Reader, bytes *[]byte, length int) (b byte, err error) {
-	newbytes := make([]byte, length)
-	n, err := conn.Read(newbytes)
-	if n != length {
-		fmt.Errorf("%d bytes read instead of %d", n, length)
-	} else if err != nil {
-		return
+	var n int
+	if conn != nil {
+		newbytes := make([]byte, length)
+		n, err = conn.Read(newbytes)
+		if n != length {
+			fmt.Errorf("%d bytes read instead of %d", n, length)
+		} else if err != nil {
+			return
+		}
+		*bytes = append(*bytes, newbytes...)
+		b = (*bytes)[len(*bytes)-1]
 	}
-	*bytes = append(*bytes, newbytes...)
-	b = (*bytes)[len(*bytes)-1]
 	return
 }
