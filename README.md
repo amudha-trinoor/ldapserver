@@ -1,7 +1,6 @@
-[![GoDoc](https://godoc.org/github.com/vjeantet/ldapserver?status.svg)](https://godoc.org/github.com/vjeantet/ldapserver)
-[![Build Status](https://travis-ci.org/vjeantet/ldapserver.svg)](https://travis-ci.org/vjeantet/ldapserver)
 
-**This package is a work in progress.**
+
+**This package is a fork from github.com/vjeantet/ldapserver. A custom listener has been added to reject non-ldap requests by checking first bytes, not ideal but works. Also added nil checks everywhere to avoid panics in scenarios such as telnet to the port followed by ctrl-c or sending ldaps request to ldap**
 
 **ldapserver** is a helper library for building server software capable of speaking the LDAP protocol. This could be an alternate implementation of LDAP, a custom LDAP proxy or even a completely different backend capable of "masquerading" its API as a LDAP Server.
 
@@ -35,7 +34,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	ldap "github.com/vjeantet/ldapserver"
+	ldap "github.com/amudha-trinoor/ldapserver"
 )
 
 func main() {

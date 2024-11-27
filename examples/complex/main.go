@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	ldap "github.com/vjeantet/ldapserver"
+	ldap "github.com/amudha-trinoor/ldapserver"
 )
 
 func main() {
@@ -242,13 +242,12 @@ func handleSearch(w ldap.ResponseWriter, m *ldap.Message) {
 	}
 
 	e := ldap.NewSearchResultEntry("cn=Valere JEANTET, " + string(r.BaseObject()))
-	e.AddAttribute("mail", "valere.jeantet@gmail.com", "mail@vjeantet.fr")
-	e.AddAttribute("company", "SODADI")
-	e.AddAttribute("department", "DSI/SEC")
-	e.AddAttribute("l", "Ferrieres en brie")
+	e.AddAttribute("company", "CO")
+	e.AddAttribute("department", "DEP")
+	e.AddAttribute("l", "en")
 	e.AddAttribute("mobile", "0612324567")
 	e.AddAttribute("telephoneNumber", "0612324567")
-	e.AddAttribute("cn", "Valère JEANTET")
+	e.AddAttribute("cn", "Ecample User")
 	w.Write(e)
 
 	e = ldap.NewSearchResultEntry("cn=Claire Thomas, " + string(r.BaseObject()))
