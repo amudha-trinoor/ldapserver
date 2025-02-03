@@ -90,7 +90,7 @@ func (c *client) serve() {
 	c.closing = make(chan bool)
 	if c.srv != nil && c.srv.OnNewConnection != nil {
 		if err := c.srv.OnNewConnection(c.rwc); err != nil {
-			Logger.Printf("Erreur OnNewConnection: %s", err)
+			Logger.Printf("ERROR OnNewConnection: %s", err)
 			return
 		}
 	}
@@ -151,7 +151,7 @@ func (c *client) serve() {
 			if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
 				Logger.Printf("Sorry client %d, i can not wait anymore (reading timeout) ! %s", c.Numero, err)
 			} else {
-				Logger.Printf("Error readMessagePacket: %s", err)
+				Logger.Printf("ERROR readMessagePacket: %s", err)
 			}
 			return
 		}
@@ -162,7 +162,7 @@ func (c *client) serve() {
 
 		message, err := messagePacket.readMessage()
 		if err != nil {
-			Logger.Printf("Error reading Message : %s\n\t%x", err.Error(), messagePacket.bytes)
+			Logger.Printf("ERROR reading Message : %s\n\t%x", err.Error(), messagePacket.bytes)
 			continue
 		}
 		Logger.Printf("<<< %d - %s - hex=%x", c.Numero, message.ProtocolOpName(), messagePacket)

@@ -38,7 +38,7 @@ func (s *Server) Handle(h Handler) {
 		return
 	}
 	if s.Handler != nil {
-		panic("LDAP: multiple Handler registrations")
+		panic("PANIC: LDAP: multiple Handler registrations")
 	}
 	s.Handler = h
 }
@@ -74,7 +74,7 @@ func (s *Server) Serve() error {
 	defer s.Listener.Close()
 
 	if s.Handler == nil {
-		Logger.Panicln("No LDAP Request Handler defined")
+		Logger.Panicln("PANIC: No LDAP Request Handler defined")
 	}
 
 	i := 0
